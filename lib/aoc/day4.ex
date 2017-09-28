@@ -6,7 +6,8 @@ defmodule AoC.Day4 do
     |> String.split("\n")
     |> Enum.map(&parse_input/1)
     |> Enum.filter(&check/1)
-    |> Enum.reduce(0, &sector_id_sum/2)
+    |> Enum.map(&shift/1)
+    |> Enum.find(&String.contains?(&1, ["north", "pole"]))
     |> IO.inspect
   end
 
@@ -39,7 +40,24 @@ defmodule AoC.Day4 do
     == checksum
   end
 
-  defp sector_id_sum(%{"sector_id" => sector_id}, sum) do
-    sum + String.to_integer(sector_id)
+  defp shift(%{
+    "name" => name,
+    "sector_id" => sector_id
+  }) do
+    rotation_count =
+      sector_id
+      |> String.to_integer
+      |> rem(26)
+
+    name
+    |> String.to_charlist
+    |> Enum.map(fn
+      ?- ->
+        ?\s
+      char ->
+        rem((char - ?a) + rotation_count, 26) + ?a
+    end)
+    |> IO.iodata_to_binary
+    |> Kernel.<>(sector_id)
   end
 end
